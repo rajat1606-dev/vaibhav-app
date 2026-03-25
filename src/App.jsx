@@ -1220,15 +1220,30 @@ function SyllabusTab({userData,prelimsProgress,setPrelimsProgress,mainsProgress,
     Math.max(MAINS_PAPERS.length,1)
   );
 
-  const PaperCard=({paper,progress,setProgress})=>{
+  const PaperCard=({paper,progress,setProgress,saveKey})=>{
     const val=progress[paper.key]||0;
+    const handleChange=(v)=>{
+      setProgress(p=>{
+        const updated={...p,[paper.key]:v};
+        // Save directly to localStorage immediately
+        try{
+          const raw=localStorage.getItem("vaibhav_profile");
+          const profile=raw?JSON.parse(raw):{};
+          profile[saveKey]=updated;
+          localStorage.setItem("vaibhav_profile",JSON.stringify(profile));
+          // Also save to native storage
+          nativeSet("vaibhav_profile",profile);
+        }catch(ex){}
+        return updated;
+      });
+    };
     return(
       <div className="card" style={{padding:"14px 16px",marginBottom:10,borderLeft:"3px solid "+paper.color}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
           <div style={{flex:1,marginRight:10}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3,flexWrap:"wrap"}}>
               <div style={{fontSize:14,fontWeight:600,color:"#ddd"}}>{paper.name}</div>
-              {paper.qualifying&&<span style={{padding:"2px 8px",borderRadius:20,fontSize:9,fontWeight:600,background:"rgba(255,153,51,.12)",color:"#FF9933",letterSpacing:.5}}>QUALIFYING</span>}
+              {paper.qualifying&&<span style={{padding:"2px 8px",borderRadius:20,fontSize:9,fontWeight:600,background:"rgba(255,153,51,.15)",color:"#FF9933",border:"1px solid rgba(255,153,51,.3)"}}>QUALIFYING</span>}
             </div>
             <div style={{fontSize:11,color:"#555",lineHeight:1.4}}>{paper.desc}</div>
             {paper.qualifying&&<div style={{fontSize:10,color:"rgba(255,153,51,.6)",marginTop:4}}>Qualifying paper — counted in overall completion</div>}
@@ -1237,8 +1252,8 @@ function SyllabusTab({userData,prelimsProgress,setPrelimsProgress,mainsProgress,
         </div>
         <div className="pbar" style={{marginBottom:8}}><div className="pfill" style={{width:`${val}%`,background:val>=80?"#138808":val>=50?"#FF9933":"#E05252"}}/></div>
         <input type="range" min="0" max="100" value={val}
-          onChange={e=>setProgress(p=>({...p,[paper.key]:parseInt(e.target.value)}))}
-          onTouchMove={e=>{ e.stopPropagation(); setProgress(p=>({...p,[paper.key]:parseInt(e.target.value)})); }}
+          onChange={e=>handleChange(parseInt(e.target.value))}
+          onTouchMove={e=>{ e.stopPropagation(); handleChange(parseInt(e.target.value)); }}
           style={{width:"100%",accentColor:paper.color,cursor:"pointer",touchAction:"none",WebkitAppearance:"none",height:20}}
         />
       </div>
@@ -1274,7 +1289,7 @@ function SyllabusTab({userData,prelimsProgress,setPrelimsProgress,mainsProgress,
         {sTab==="prelims"&&(
           <>
             <div style={{fontSize:12,color:"#555",marginBottom:12,lineHeight:1.6}}>Prelims has 2 papers. GS Paper 1 counts for merit. CSAT is qualifying only (min 33%).</div>
-            {PRELIMS_PAPERS.map(p=><PaperCard key={p.key} paper={p} progress={prelimsProgress} setProgress={setPrelimsProgress}/>)}
+            {PRELIMS_PAPERS.map(p=><PaperCard key={p.key} paper={p} progress={prelimsProgress} setProgress={setPrelimsProgress} saveKey="prelimsProgress"/>)}
           </>
         )}
         {sTab==="mains"&&(
@@ -1286,7 +1301,7 @@ function SyllabusTab({userData,prelimsProgress,setPrelimsProgress,mainsProgress,
               const paper = (p.key==="opt1"||p.key==="opt2") && userData?.optional
                 ? {...p, name: p.key==="opt1" ? userData.optional+" Paper 1" : userData.optional+" Paper 2", color:"#7C3AED"}
                 : p;
-              return <PaperCard key={p.key} paper={paper} progress={mainsProgress} setProgress={setMainsProgress}/>;
+              return <PaperCard key={p.key} paper={paper} progress={mainsProgress} setProgress={setMainsProgress} saveKey="mainsProgress"/>;
             })}
           </>
         )}
@@ -1705,6 +1720,37 @@ export default function App(){
       }).catch(()=>setAppStateAndRef("onboarding"));
     }
   },[]);
+
+  // ── SAVE SYLLABUS PROGRESS whenever it changes ──────────────────────────
+  useEffect(()=>{
+    if(!userData || Object.keys(prelimsProgress).length===0) return;
+    try{
+      const profile = JSON.parse(localStorage.getItem("vaibhav_profile")||"{}");
+      profile.prelimsProgress = prelimsProgress;
+      localStorage.setItem("vaibhav_profile", JSON.stringify(profile));
+      nativeSet("vaibhav_profile", profile);
+    } catch(e){ console.log("Save prelims error:", e); }
+  },[prelimsProgress]);
+
+  useEffect(()=>{
+    if(!userData || Object.keys(mainsProgress).length===0) return;
+    try{
+      const profile = JSON.parse(localStorage.getItem("vaibhav_profile")||"{}");
+      profile.mainsProgress = mainsProgress;
+      localStorage.setItem("vaibhav_profile", JSON.stringify(profile));
+      nativeSet("vaibhav_profile", profile);
+    } catch(e){ console.log("Save mains error:", e); }
+  },[mainsProgress]);
+
+  // ── SAVE TASKS whenever they change ─────────────────────────────────────
+  useEffect(()=>{
+    try{ localStorage.setItem("vaibhav_tasks", JSON.stringify(tasks)); } catch(e){}
+  },[tasks]);
+
+  // ── SAVE NOTES whenever they change ─────────────────────────────────────
+  useEffect(()=>{
+    try{ localStorage.setItem("vaibhav_notes", JSON.stringify(notes)); } catch(e){}
+  },[notes]);
 
   // Timer is handled inside FocusTab component
 
