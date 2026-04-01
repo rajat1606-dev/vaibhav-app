@@ -1563,7 +1563,7 @@ function SideMenu({open,onClose,userData,onSignOut,onUpdateProfile}){
                 <div style={{background:"rgba(255,255,255,.04)",borderRadius:14,padding:"16px",marginBottom:14,border:"1px solid rgba(255,255,255,.07)"}}>
                   <div style={{fontSize:12,fontWeight:600,color:"#FF9933",marginBottom:8}}>Why I Built Vaibhav</div>
                   <div style={{fontSize:13,color:"rgba(255,255,255,.55)",lineHeight:1.85}}>
-                    I'm a BTech CSE student who is also preparing for UPSC. I was deeply inspired by <strong style={{color:"#EDE8DC"}}>Vaibhav Anand Sharma</strong> — UPSC 2023 AIR 58 — and named this app after him as a tribute to his journey.
+                    I'm a BTech CSE student. I was deeply inspired by <strong style={{color:"#EDE8DC"}}>Vaibhav Anand Sharma</strong> — UPSC 2023 AIR 58 — and named this app after him as a tribute to his journey.
                   </div>
                   <div style={{fontSize:13,color:"rgba(255,255,255,.55)",lineHeight:1.85,marginTop:10}}>
                     Vaibhav was built for <strong style={{color:"#EDE8DC"}}>personal use</strong> — as my own UPSC command centre. But I believe every aspirant deserves a tool this powerful, so I'm sharing it with everyone. This is not about monetization. It's about the mission.
